@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL") // Use environment variables for security.
+}
+
+model User {
+    id             String      @id @default(cuid())  // Unique identifier for the user.
+    imageUrl       String?                         // URL for the user's profile image (optional).
+    firstName      String?                         // User's first name (optional).
+    lastName       String?                         // User's last name (optional).
+    createdAt      DateTime     @default(now())    // Timestamp when the user record is created.
+    updatedAt      DateTime     @updatedAt         // Automatically updated timestamp for modifications.
+    emailAddress   String       @unique            // User's email address, must be unique.
+    credit         Int          @default(150)      // User's credit balance with a default of 150.
+    userToProjects  UserToProject[]
+}
+
+model Project {
+    id              String      @id @default(cuid())  // Unique identifier for the user.
+    name            String                         // URL for the user's profile image (optional).
+    repoUrl         String                         // User's first name (optional).
+    githubToken     String?                         // User's last name (optional).
+    createdAt      DateTime      @default(now())    // Timestamp when the user record is created.
+    deletedAt      DateTime?      
+    updatedAt      DateTime      @updatedAt         // Automatically updated timestamp for modifications.
+    userToProjects  UserToProject[]
+}
+
+model UserToProject {
+id             String      @id @default(cuid())  // Unique identifier for the record.
+createdAt      DateTime     @default(now())    // Timestamp when the user record is created.
+updatedAt      DateTime     @updatedAt         // Automatically updated timestamp for modifications.
+userId          String
+projectId       String
+user           User         @relation(fields: [userId], references: [id])
+project           Project         @relation(fields: [projectId], references: [id])
+
+@@unique([userId, projectId])
+
+}
+

@@ -2,6 +2,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { UserButton } from "@clerk/nextjs";
 import React from "react";
 import AppSidebar from "./dashboard/app-sidebar";
+import { Card } from "@/components/ui/card";
 
 type Props = {
   children: React.ReactNode;
@@ -10,18 +11,18 @@ type Props = {
 const SideBarLayout = ({ children }: Props) => {
   return (
     <SidebarProvider>
-      <AppSidebar/>
+      <AppSidebar />
       <main className="m-2 w-full">
-        <div className="flex border-sidebar-border bg-sidebar items-center gap-2 border p-2 px-4 shadow-md">
+        <div className="flex items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar p-2 px-4 shadow-md">
           {/* <SearchBar/> */}
           <div className="ml-auto"></div>
           <UserButton />
         </div>
         <div className="h-4"></div>
         {/* main content */}
-        <div className="border-sidebar-border bg-sidebar h-[calc(100vh-6rem)] overflow-y-scroll rounded-md border p-4 shadow">
+        <Card className="hide-scrollbar h-[calc(100vh-10rem)] overflow-auto p-4">
           {children}
-        </div>
+        </Card>
       </main>
     </SidebarProvider>
   );

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import useRefetch from "@/hooks/use-refetch";
 import { api } from "@/trpc/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -14,6 +15,7 @@ type FormInput = {
 const CreatePage = () => {
   const { register, handleSubmit, reset } = useForm<FormInput>();
   const createProject = api.project.createProject.useMutation();
+  const refetch = useRefetch();
 
   function onSubmit(data: FormInput) {
     // console.log("Here is the data:", data);
@@ -27,6 +29,7 @@ const CreatePage = () => {
       {
         onSuccess: () => {
           toast.success("Project created successfully");
+          refetch();
           reset();
         },
         onError: () => {
@@ -44,7 +47,7 @@ const CreatePage = () => {
       <div>
         <div>
           <h1 className="text-2xl font-semibold">Link Your Github Repo</h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             Enter the URL of your repository to link it to IntelliX
           </p>
         </div>
@@ -67,7 +70,13 @@ const CreatePage = () => {
               placeholder="Github Token (Optional)"
             />
             <div className="h-4"></div>
-            <Button type="submit">Create Project</Button>
+            <Button disabled={createProject.isPending} type="submit">
+              {createProject.isPending ? (
+                <p className="animate-pulse">Creating Project...</p>
+              ) : (
+                "Create Project"
+              )}
+            </Button>
           </form>
         </div>
       </div>

@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import {
   Bot,
@@ -48,28 +49,17 @@ const items = [
   },
 ];
 
-const projects = [
-  {
-    name: "Project 1",
-  },
-  {
-    name: "Project 2",
-  },
-  {
-    name: "Project 3",
-  },
-];
-
 const AppSidebar = () => {
   const pathname = usePathname();
   const { open } = useSidebar();
+  const { projects, projectId, setProjectId } = useProject();
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <div className="flex items-center gap-2">
           <Image src="/logo.png" alt="logo" width={40} height={40} />
           {open && (
-            <h1 className="text-primary/80 text-xl font-bold">IntelliX</h1>
+            <h1 className="text-xl font-bold text-primary/80">IntelliX</h1>
           )}
         </div>
       </SidebarHeader>
@@ -105,15 +95,22 @@ const AppSidebar = () => {
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {projects.map((project) => {
+              {projects?.map((project) => {
                 return (
                   <SidebarMenuItem key={project.name}>
                     <SidebarMenuButton asChild>
-                      <div>
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setProjectId(project.id);
+                        }}
+                      >
                         <div
                           className={cn(
-                            "text-primary flex size-6 items-center justify-center rounded-sm border bg-white text-sm",
-                            { "bg-primary text-white": true },
+                            "flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary",
+                            {
+                              "bg-primary text-white": project.id === projectId,
+                            },
                           )}
                         >
                           {project.name[0]}

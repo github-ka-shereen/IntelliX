@@ -2,11 +2,13 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 generator client {
     provider = "prisma-client-js"
+    previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL") // Use environment variables for security.
+    extensions = [vector]
 }
 
 model User {
@@ -31,6 +33,7 @@ model Project {
     updatedAt       DateTime      @updatedAt         // Automatically updated timestamp for modifications.
     userToProjects  UserToProject[]
     commits         Commit[]
+    sourceCodeEmbedding  SourceCodeEmbedding[]
 }
 
 model UserToProject {
@@ -57,6 +60,21 @@ model Commit {
     commitAuthorName    String
     commitAuthorAvatar  String
     commitDate          DateTime
+
+    //AI Summary
+    summary             String
+
+}
+
+model SourceCodeEmbedding {
+    id                  String          @id @default(cuid())
+    createdAt           DateTime        @default(now())    // Timestamp when the user record is created.
+    updatedAt           DateTime        @updatedAt         // Automatically updated timestamp for modifications.
+    projectId           String
+    project             Project         @relation(fields: [projectId], references: [id])
+    summaryEmbedding    Unsupported("vector(768)")?
+    sourceCode          String
+    fileName            String
 
     //AI Summary
     summary             String

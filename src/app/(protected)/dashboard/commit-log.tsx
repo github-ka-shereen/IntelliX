@@ -16,7 +16,7 @@ const CommitLog = () => {
           <li className="relative flex gap-x-4" key={commit.id}>
             <div
               className={cn(
-                commitIdx !== commits.length - 1 ? "h-8" : "-bottom-6",
+                commitIdx !== commits.length - 1 ? "h-6" : "-bottom-6",
                 "absolute left-0 top-0 flex w-6 justify-center",
               )}
             >

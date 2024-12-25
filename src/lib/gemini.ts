@@ -1,4 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Document } from "@langchain/core/documents";
+import PQueue from "p-queue";
+
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -6,9 +9,16 @@ const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
 });
 
+// Initialize a queue with rate limiting
+const queue = new PQueue({
+  interval: 120000, // 120 seconds (2 minutes)
+  intervalCap: 1, // Maximum 1 request per 2 minutes
+});
+
 export const aiSummariesCommit = async (diff: string) => {
-  const response = await model.generateContent([
-    `You are an expert programmer, and you are trying to summarize a git diff.
+  return await queue.add(async () => {
+    const response = await model.generateContent([
+      `You are an expert programmer, and you are trying to summarize a git diff.
 
 Reminders about the git diff format:
 For every file, there are a few metadata lines, like (for example):
@@ -38,8 +48,41 @@ The last comment does not include the file names,
 because there were more than two relevant files in the hypothetical commit. 
 Do not include parts of the example in your summary. 
 It is given only as an example of appropriate comments.`,
-    `Please summarize the following diff file: \n\n${diff}`,
-  ]);
-  console.log("AI Summary Response:", response);
-  return response.response.text();
+      `Please summarize the following diff file: \n\n${diff}`,
+    ]);
+    console.log("AI Summary Response:", response.response.text());
+    return response.response.text();
+  });
 };
+
+export const aiSummariesCode = async (doc: Document) => {
+  console.log("getting summary for:", doc.metadata.source);
+  try {
+    const code = doc.pageContent.slice(0, 10000);
+    const response = await model.generateContent([
+      `You are an expert software engineer who specializes in onboarding junior software developers onto projects
+  `,
+      `You are onboarding a junior software developer and you are explaining to them the purpose of the ${doc.metadata.source} file.
+  `,
+      `Here is the code:`,
+      `\`\`\`
+  ${code}
+  \`\`\`
+  `,
+      `Give a summary of 100 words or less of the code above.`,
+    ]);
+    console.log("AI Summary Response:", response);
+    return response.response.text();
+  } catch {
+    return "";
+  }
+};
+
+export async function generateEmbedding(summary: string) {
+  const model = genAI.getGenerativeModel({
+    model: "text-embedding-004",
+  });
+  const result = await model.embedContent(summary);
+  const embedding = result.embedding;
+  return embedding.values;
+}

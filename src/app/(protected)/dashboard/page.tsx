@@ -4,13 +4,13 @@ import { GithubIcon } from "hugeicons-react";
 import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import CommitLog from "./commit-log";
+import AskQuestionCard from "./ask-question-card";
 
 const DashboardPage = () => {
   const { project } = useProject();
   return (
     <>
       <div>
-        {project?.id}
         <div className="flex flex-wrap items-center justify-between gap-y-4">
           <div className="w-fit rounded-md bg-primary px-4 py-3">
             {/* Github link */}
@@ -37,7 +37,8 @@ const DashboardPage = () => {
         </div>
         <div className="mt-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
-            AskQuestions Meetings
+            <AskQuestionCard/>
+            Meetings
           </div>
         </div>
         <div className="mt-8"></div>

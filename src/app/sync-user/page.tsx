@@ -12,25 +12,37 @@ const SyncUser = async () => {
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
 
+  console.log("User retrieved from Clerk:", user);
+
   if (!user.emailAddresses[0]?.emailAddress) {
+    console.log("No email address found.");
     return notFound();
   }
 
-  await prisma.user.upsert({
-    where: { emailAddress: user.emailAddresses[0].emailAddress },
-    update: {
-      imageUrl: user.imageUrl,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    },
-    create: {
-      id: userId,
-      emailAddress: user.emailAddresses[0].emailAddress,
-      imageUrl: user.imageUrl,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    },
+  const emailAddress = user.emailAddresses[0].emailAddress;
+  console.log("Checking if user exists with email:", emailAddress);
+
+  const existingUser = await prisma.user.findUnique({
+    where: { emailAddress },
   });
+
+  console.log("Existing user found:", existingUser);
+
+  if (!existingUser) {
+    console.log("Creating new user...");
+
+    await prisma.user.create({
+      data: {
+        id: userId,
+        emailAddress,
+        imageUrl: user.imageUrl,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
+
+    console.log("New user created.");
+  }
 
   return redirect("/dashboard");
 };

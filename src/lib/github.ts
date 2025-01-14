@@ -36,7 +36,7 @@ export const getCommitHashes = async (
       new Date(b.commit.author).getTime() - new Date(a.commit.author).getTime(),
   ) as any[];
 
-  return sortedCommits.slice(0, 10).map((commit: any) => ({
+  return sortedCommits.slice(0, 3).map((commit: any) => ({
     commitMessage: commit?.commit?.message ?? "",
     commitHash: commit?.sha as string,
     commitAuthorName: commit?.commit?.author?.name ?? "",

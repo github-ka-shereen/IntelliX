@@ -16,7 +16,8 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // console.log(`ctx.user.userId: ${ctx.user.userId!}`); // Log the userId
+      // console.log(`ctx.user.userId: ${ctx.user.u
+      // serId!}`); // Log the userId
       const project = await ctx.db.project.create({
         data: {
           repoUrl: input.githubUrl,
@@ -45,13 +46,52 @@ export const projectRouter = createTRPCRouter({
       },
     });
   }),
-  getCommits: protectedProcedure.input(z.object({ projectId: z.string() })).query(
-    async ({ ctx, input }) => {
+  getCommits: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
       return await ctx.db.commit.findMany({
         where: {
           projectId: input.projectId,
         },
       });
-    }
-  )
+    }),
+  saveAnswer: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        question: z.string(),
+        fileReferences: z.any(),
+        answer: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.question.create({
+        data: {
+          answer: input.answer,
+          fileReferences: input.fileReferences,
+          projectId: input.projectId,
+          question: input.question,
+          userId: ctx.user.userId!,
+        },
+      });
+    }),
+  getQuestions: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.question.findMany({
+        where: {
+          projectId: input.projectId,
+        },
+        include: {
+          user: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
 });

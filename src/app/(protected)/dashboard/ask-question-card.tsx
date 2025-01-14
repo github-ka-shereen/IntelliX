@@ -15,6 +15,11 @@ import Image from "next/image";
 import { useState } from "react";
 import { askQuestion } from "./actions";
 import { readStreamableValue } from "ai/rsc";
+import CodeReferences from "./code-references";
+import { api } from "@/trpc/react";
+import { toast } from "sonner";
+import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/drawer";
+import { X } from "lucide-react";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -25,6 +30,7 @@ const AskQuestionCard = () => {
     { fileName: string; sourceCode: string; summary: string }[]
   >([]);
   const [answer, setAnswer] = useState("");
+  const saveAnswer = api.project.saveAnswer.useMutation();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setAnswer("");
@@ -47,32 +53,62 @@ const AskQuestionCard = () => {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[80vw]">
-          <DialogHeader>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="mb-16 max-h-[85vh] p-5">
+          <DrawerHeader className="flex items-center justify-between gap-5">
             <DialogTitle>
               <Image src="/logo.png" alt="logo" width={40} height={40} />
             </DialogTitle>
-          </DialogHeader>
+            <div className="flex items-center gap-2">
+              <Button
+                disabled={saveAnswer.isPending}
+                variant={"outline"}
+                onClick={() => {
+                  saveAnswer.mutate(
+                    {
+                      projectId: project!.id,
+                      question,
+                      answer,
+                      fileReferences,
+                    },
+                    {
+                      onSuccess: () => {
+                        toast.success("Answer saved!");
+                      },
+                      onError: () => {
+                        toast.error("Something went wrong");
+                      },
+                    },
+                  );
+                }}
+              >
+                Save answer
+              </Button>
+            </div>
+            <Button
+              size={"lg"}
+              variant={"destructive"}
+              type="button"
+              onClick={() => {
+                setAnswer("");
+                setQuestion("");
+                setFileReferences([]);
+                setOpen(false);
+              }}
+            >
+              <X /> Close
+            </Button>
+          </DrawerHeader>
 
-          <div className="flex items-center justify-center">
-            {" "}
+          <div className="flex gap-4">
             <MDEditor.Markdown
               source={answer}
-              className="!h-full max-h-[40vh] max-w-[70vw] overflow-y-scroll p-5"
+              className="h-[80vh] overflow-y-auto rounded-md border border-gray-200 p-4"
             />
+            <CodeReferences fileReferences={fileReferences} />
           </div>
-
-          <Button
-            type="button"
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            Close
-          </Button>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
 
       <Card className="relative col-span-3">
         <CardHeader>
